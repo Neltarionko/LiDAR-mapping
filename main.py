@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import cv2
+from rdp import rdp
 
 df = pd.read_csv("examp2.txt", sep=";", names=['coordinate', 'distance'])
 
@@ -35,38 +36,40 @@ for i in range(len(df)):
 
 
 MIN_X, MIN_Y = abs(min(walls_x)), abs(min(walls_y))
-
+walls = []
 for i in range(len(walls_x)):  # Двигаю всю координатную сетку из отрицательной части
     walls_x[i] += MIN_X
     walls_x[i] = round(walls_x[i], precision)/2
     walls_y[i] += MIN_Y
     walls_y[i] = round(walls_y[i], precision)/2
+    walls.append([walls_x[i], walls_y[i]])
     if i < 100:
         robot_x[i] += MIN_X
+        robot_x[i] = round(robot_x[i], precision)/2
         robot_y[i] += MIN_Y
+        robot_y[i] = round(robot_y[i], precision)/2
 
+walls = rdp(walls, epsilon=0.001)
+new_walls_x, new_walls_y = [], []
+for i in walls:
+    new_walls_x.append(i[0])
+    new_walls_y.append(i[1])
 # plt.plot(walls_x, walls_y, "ro", ms=0.25)
 # plt.plot(robot_x, robot_y)
 # plt.show()
 
-MAP_SIZE = (pow(10, precision) * math.ceil(max(walls_x) + abs(min(walls_x))),\
-             pow(10, precision) * math.ceil(max(walls_y) + abs(min(walls_y))))
+MAP_SIZE = (pow(10, precision) * math.ceil(max(new_walls_x) + abs(min(new_walls_x))),\
+             pow(10, precision) * math.ceil(max(new_walls_y) + abs(min(new_walls_y))))
 raw_map = np.zeros(MAP_SIZE)
 
-for i in range(len(walls_x)):
-    raw_map[int(pow(10, precision) * walls_x[i])][int(pow(10, precision) * walls_y[i])] = 1
+for i in range(len(new_walls_x)):
+    raw_map[int(pow(10, precision) * new_walls_x[i])][int(pow(10, precision) * new_walls_y[i])] = 1
 
-my_map = cv2.GaussianBlur(raw_map, (7, 7), 0)
-
-# for i in my_map:
-#     for j in i:
-#         j = round(j)
-
+my_map = cv2.GaussianBlur(raw_map, (3, 3), 0)
 my_map = cv2.convertScaleAbs(my_map, alpha=1, beta=0)
 
 plt.imshow(my_map, cmap='gray')
 plt.show()
-
 '''
 TODO
 Сделать карту по координатам точек стен
