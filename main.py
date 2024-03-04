@@ -84,54 +84,67 @@ for i in range(len(my_map)):
     elif changed_y:
         changed_y -= 1
 
-for i in range(len(my_map)):
-    for j in range(len(my_map[i])):
-        if my_map[i, j] == 1 and np.any(my_map[i-1:i+1, j-1]) == False and np.any(my_map[i-1, j-1:j+1]) == False:
-            my_map[i, j] = 2
-        elif my_map[i, j] == 1 and np.any(my_map[i-1:i+1, j+1]) == False and np.any(my_map[i-1, j-1:j+1]) == False:
-            my_map[i, j] = 2
-        elif my_map[i, j] == 1 and np.any(my_map[i-1:i+1, j+1]) == False and np.any(my_map[i+1, j-1:j+1]) == False:
-            my_map[i, j] = 2
-        elif my_map[i, j] == 1 and np.any(my_map[i-1:i+1, j-1]) == False and np.any(my_map[i+1, j-1:j+1]) == False:
-            my_map[i, j] = 2
-edges_list = np.where(np.array(my_map)==2)
-start = []
-end = []
+def add_edges(my_map):
+    '''Ищет углы у объектов на карте
+    '''
+    for i in range(len(my_map)):
+        for j in range(len(my_map[i])):
+            if my_map[i, j] == 1 and np.any(my_map[i-1:i+1, j-1]) == False and np.any(my_map[i-1, j-1:j+1]) == False:
+                my_map[i, j] = 2
+            elif my_map[i, j] == 1 and np.any(my_map[i-1:i+1, j+1]) == False and np.any(my_map[i-1, j-1:j+1]) == False:
+                my_map[i, j] = 2
+            elif my_map[i, j] == 1 and np.any(my_map[i-1:i+1, j+1]) == False and np.any(my_map[i+1, j-1:j+1]) == False:
+                my_map[i, j] = 2
+            elif my_map[i, j] == 1 and np.any(my_map[i-1:i+1, j-1]) == False and np.any(my_map[i+1, j-1:j+1]) == False:
+                my_map[i, j] = 2
 
-edges_list = np.append(edges_list, np.zeros((1, len(edges_list[0]))), axis=0)
-edges_list = np.append(edges_list, end_point, axis=1)
-edges_list = np.insert(edges_list, [0], starting_point, axis=1)
-edges_list = np.array(edges_list, dtype=int)
+def vision_graph(my_map, print=False):
+    '''Создаёт и добавляет на карту углы объектов и граф видимости
 
-for i in range(len(edges_list[0])):
-    if edges_list[2][i] == 1:
-        for j in range(len(edges_list[0])):
-            d_y = abs(edges_list[0][j] - edges_list[0][i])
-            d_x = abs(edges_list[1][j] - edges_list[1][i])
-            y = np.linspace(edges_list[0][i], edges_list[0][j], max(d_y, d_x), dtype=int)
-            x = np.linspace(edges_list[1][i], edges_list[1][j], max(d_y, d_x), dtype=int)
-            for k in range(len(x)):
-                if my_map[y[k]][x[k]] == 1:
-                    break
-                elif k == len(x) - 1:
-                    start.append(edges_list[0][i])
-                    start.append(edges_list[1][i])
-                    end.append(edges_list[0][j])
-                    end.append(edges_list[1][j])
-                    edges_list[2][j] = 1
+    Parametres:
+    my_map: карта
+    print: флаг отрисовки линий на карте
+    '''
+    add_edges(my_map)
+    edges_list = np.where(np.array(my_map)==2)
+    start = []
+    end = []
 
-X = []
-Y = []
+    edges_list = np.append(edges_list, np.zeros((1, len(edges_list[0]))), axis=0)
+    edges_list = np.append(edges_list, end_point, axis=1)
+    edges_list = np.insert(edges_list, [0], starting_point, axis=1)
+    edges_list = np.array(edges_list, dtype=int)
 
-for i in range(0, len(start) - 1, 2):
-    X.append(start[i+1])
-    Y.append(start[i])
-    X.append(end[i+1])
-    Y.append(end[i])
-    plt.plot(X, Y, 'ob--')
-    X.clear()
-    Y.clear()
+    for i in range(len(edges_list[0])):
+        if edges_list[2][i] == 1:
+            for j in range(len(edges_list[0])):
+                d_y = abs(edges_list[0][j] - edges_list[0][i])
+                d_x = abs(edges_list[1][j] - edges_list[1][i])
+                y = np.linspace(edges_list[0][i], edges_list[0][j], max(d_y, d_x), dtype=int)
+                x = np.linspace(edges_list[1][i], edges_list[1][j], max(d_y, d_x), dtype=int)
+                for k in range(len(x)):
+                    if my_map[y[k]][x[k]] == 1:
+                        break
+                    elif k == len(x) - 1:
+                        start.append(edges_list[0][i])
+                        start.append(edges_list[1][i])
+                        end.append(edges_list[0][j])
+                        end.append(edges_list[1][j])
+                        edges_list[2][j] = 1
+    if print:
+        X = []
+        Y = []
 
+        for i in range(0, len(start) - 1, 2):
+            X.append(start[i+1])
+            Y.append(start[i])
+            X.append(end[i+1])
+            Y.append(end[i])
+            plt.plot(X, Y, 'ob--')
+            X.clear()
+            Y.clear()
+
+vision_graph(my_map)
 plt.imshow(my_map)
 plt.plot(starting_point[1], starting_point[0], 'or')
 plt.plot(end_point[1], end_point[0], 'or')
