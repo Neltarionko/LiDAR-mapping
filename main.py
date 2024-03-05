@@ -64,7 +64,12 @@ for i in range(len(walls_x)):
 my_map = cv2.GaussianBlur(raw_map, (7, 7), 0)
 my_map = cv2.convertScaleAbs(my_map, alpha=1, beta=0)
 
-
+with open("map.txt", 'w') as f:
+    for i in range(len(my_map)):
+        for j in range(len(my_map[i]) - 1):
+            f.write(f"{str(my_map[i][j])}, ")
+        f.write(f"{str(my_map[i][j])}\n")
+print(MAP_SIZE)
 changed_x, changed_y = 0, 0
 for i in range(len(my_map)):
     if not changed_y:
@@ -144,7 +149,7 @@ def vision_graph(my_map, print=False):
             X.clear()
             Y.clear()
 
-vision_graph(my_map)
+# vision_graph(my_map)
 plt.imshow(my_map)
 plt.plot(starting_point[1], starting_point[0], 'or')
 plt.plot(end_point[1], end_point[0], 'or')
